@@ -1,0 +1,181 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath, amssymb, amsthm, graphicx, epsfig, fancyhdr, enumitem, breqn, bm, geometry, lastpage, titling}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[utf8]{inputenc}
+\usepackage[mathscr]{euscript}
+ \geometry{
+ a4paper,
+ total={170mm,227mm},
+ left=20mm,
+ top=30mm,
+ }
+
+\title{Parameter Values} 
+\author{Matthew Moreno}
+
+\setlength{\headheight}{28pt}
+\setlength\parindent{0pt}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+
+\usepackage{xspace}
+\usepackage{mathtools}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+\begin{document}
+    
+
+EVENT PARAMETERS
+\begin{itemize}
+	\item  specify random motion component
+	\begin{itemize}
+    	\item sigma\_rm specifies the standard deviation of ant turn angles 
+      	\[ \texttt{sigma\_rm} = 1 \]
+        source: \cite{khuong_how_2013} pg 12, worked out in \texttt{turn_deviation.nb}
+      
+      	\item \texttt{beta\_rm} affects rate (event/distance) at which ant undergoes reorientation events (its mean free path), \texttt{slope\_freepath} causes lengthening of free path as ant travels in alignment with gradient on steeper slope -- WARNING: this will get weird for inclines much past $\pi/3$...
+      	\begin{align*}
+        	\text{free path} 
+            &= \texttt{beta\_rm} + \operatorname{abs}(\vec{s} \cdot \hat{\vec{v}}) \texttt{slope\_freepath}  \\
+            \texttt{beta\_rm} = 1  \text{ cm}\\
+            \texttt{slope\_freepath} 
+            &= \frac{0.6}{\tan(\pi/3)} \text{ cm}	 \\		
+            &= 0.3464  \text{ cm}
+        \end{align*}
+                source: \cite{khuong_how_2013} pg 7
+
+      	\item turning due to orientation relative to incline--straight or turn
+        \begin{align*}
+			t =
+			\begin{cases} 
+      			0 & \bm{U}_1 < f(\phi) \\
+      			1 & \text{otherwise}
+   			\end{cases}
+		\end{align*}
+        \begin{align*}
+        	f(\phi) 
+            &= b_1 + a_1\cos(2\phi)(c_1 - \hat{\vec{s}} \cdot \hat{\vec{v}}) \\
+            &= b_1 + a_1[\cos^2(\phi)-\sin^2(\phi)](c_1 - \hat{\vec{v}} \cdot \hat{\vec{s}}) \\
+            f(\vec{s}, \vec{v}) 
+            &= b_1 + a_1\Big[\frac{(\vec{s} \cdot \vec{v})^2}{(\vec{v}\cdot\vec{v}) (\vec{s} \cdot \vec{s})}-\frac{(s_xv_y-s_yv_x)^2}{(\vec{v}\cdot\vec{v}) (\vec{s} \cdot \vec{s})}\Big](c_1 - \hat{\vec{v}} \cdot \hat{\vec{s}}) \\
+            &= b_1 + a_1\Big[\frac{(\vec{s} \cdot \vec{v})^2 - (s_xv_y-s_yv_x)^2}{(\vec{v}\cdot\vec{v}) (\vec{s} \cdot \vec{s})}\Big]\Big(c_1 - \frac{\vec{s} \cdot \vec{v}}{\norm{\vec{v}}\norm{\vec{s}}}\Big) 
+        \end{align*}
+        \begin{align*}
+        \texttt{a\_1} = 0.0500, \texttt{b\_1} = 0.1625, \texttt{c\_1} = 1.5
+        \end{align*}
+        source: \cite{khuong_how_2013} (based on visual approximations from data in Figure 7), worked out parameters in \texttt{straight_probs.py}, worked out vector math/simplification in this document and in \texttt{sin_vecs.py}, verified result give here in \texttt{confirm_vec_math.py}
+        
+        \item turning due to orientation relative to incline--left or right
+		\begin{align*}
+			s =
+			\begin{cases} 
+      			1 & \bm{U}_2 <  g(\phi) \\
+      			-1 & \text{otherwise}
+   			\end{cases}
+		\end{align*}
+        \begin{align*}
+        	g(\phi) 
+            &= 1/2 + d_2\frac{(a_2\sin(\phi) - b_2\sin(2 \phi))}{\pi} \\
+            &= 1/2 + \frac{a_2 d_2 \sin(\phi)}{\pi} - \frac{2 b_2 d_2 \sin(\phi) \cos(\phi)}{\pi}
+ \\
+            g(\vec{s},\vec{v}) 
+            &= 1/2 + m_2 \frac{s_xv_y-s_yv_x}{\norm{\vec{v}}\norm{\vec{s}}} - n_2 \frac{s_xv_y-s_yv_x}{\norm{\vec{v}}\norm{\vec{s}}} \frac{\vec{s} \cdot \vec{v}}{\norm{\vec{v}}\norm{\vec{s}}} \\
+            &= 1/2 + m_2 \frac{s_xv_y-s_yv_x}{\norm{\vec{v}}\norm{\vec{s}}} - n_2 \frac{(\vec{s} \cdot \vec{v})(s_xv_y-s_yv_x)}{(\vec{v} \cdot \vec{v})(\vec{s}\cdot\vec{s})}
+        \end{align*}
+        \begin{align*}
+       		\texttt{a\_2} = 0.8139, \texttt{b\_2} = 0.5482, \texttt{d\_2} = 0.9154 \\
+            \texttt{m\_2} = \frac{\texttt{a\_2} \times \texttt{d\_2}}{\pi} = 0.2372 \\
+            \texttt{n_2} = \frac{2 \times \texttt{b\_2} \times \texttt{d\_2}}{\pi} = 0.3195
+        \end{align*}
+  		source: \cite{khuong_how_2013} (based on visual approximations from data in Figure 7), worked out parameters in \texttt{turn_probs.py}, worked out vector math/simplification in this document and in \texttt{sin_vecs.py}, verified result give here in \texttt{confirm_vec_math.py}
+
+      	\item the distance from food/nest at which the ant switches roles
+      	\[ \texttt{dist\_switch\_role\_squared} = 1 \text{ cm}^2; \]
+       	source: none (seemed like a convenient and reasonable choice)
+	\end{itemize}
+    \item pheromone grid and behavior
+    \begin{itemize}
+     	\item spacing between grid points
+      	\[ \texttt{phgrid\_size} = 0.1 \text{ cm} \]
+
+      	\item how far away from current position ant can sense pheromone
+      	\[ \texttt{sense\_radius} = 2 \text{ cm}\]
+        source: \cite{perna_individual_2012} pg 10
+	\end{itemize}
+\end{itemize}
+DIFFERENTIAL EQUATION PARAMETERS
+ \begin{itemize}
+%  	\item target running speed of ant
+%     \[ \texttt{xi} = 2 \]
+%     source: \cite{perna_individual_2012} pg 12 (ants observed going up to 6 cm / sec... this was the average observed speed)
+    
+    \item constant power equation
+    \[ \texttt{ant\_power} = \norm{v}^2[\texttt{incline\_scale} - cos(\theta)] + \texttt{gravity\_scale} sin(\theta) \norm{v}\]
+    matlab \texttt{best\_fit.m}, grapher, \cite{holt_locomotion_2012} $\rightarrow$ $\texttt{power} = 0.8115$, $\texttt{incline\_scale} = 1.2144$, $\texttt{gravity\_scale} = 0.2005$
+
+%     \item affects rate at which ant accelerates under its own power
+%     \[ \texttt{nu} = 1 \]
+%     source: \cite{ryan_model_2016} pg 1589
+
+    \item $e^{-\text{coeff}} \times \text{dist}$ -- smaller = more attraction
+    \[ \texttt{attraction\_to\_food\_1} = 1 \]
+    source \cite{ryan_model_2016} pg 12
+
+    \item $\text{coeff} \times e^{(-\text{dist})}$ -- larger = more attraction \\
+    according to Simon half life of pheromone is 20 minutes \\
+    taking into account the diffusion of pheromone, the ``effective'' half life might be much lower than this
+    then $\lambda = \ln(1/2)/1 \approx -0.693$
+    \[ \texttt{attraction\_to\_food\_2} = 0.693 \]
+
+    \item rate at which ant proceeds towards nest
+   	\[ \texttt{attraction\_to\_nest} = 1 \]
+    source: \cite{ryan_model_2016} pg 1589
+
+    \item rate at which ant deposits pheromone
+    \[ \texttt{pheromone\_rate} = 1 \]
+
+    \item half life of pheromone is about 20 min \\
+    $\lambda = \ln(1/2)/1200$, $1200 = 20 \times 60$ sec
+    \[ \texttt{evap\_lambda} = -0.0005776 \]
+    source: personal communication with Simon
+    
+
+    \item how strongly does an ant respond to pheromone
+    \[ \texttt{attraction\_to\_pheromone} = 10 \]
+    \cite{ryan_model_2016} pg 1589
+
+    \item how long and wide is the ant
+    \[ \texttt{ant\_length} = 0.5 \text{ cm} \]
+    \[ \texttt{ant\_width} = 0.3 \text{ cm} \]
+    source: personal communication with Simon
+\end{itemize}
+
+OTHER PARAMATERS
+\begin{itemize}
+	\item number of ants in the simulation
+    
+    Ryan's nest$\leftrightarrow$food path is 60 nondimensional units, approximately 200 times the length of an individual ant. An ant has length around 0.5 cm.
+    \[
+    1 \text{ndu} \frac{200 \text{ants}}{60 \text{ndu}} \frac{1 \text{cm}}{2 \text{ant}} = 1.67 \text{cm}
+    \]
+    Ryan's arena 100 ndu by 50 ndu, has 400 ants.
+    \[
+    \frac{400 \text{ant}}{5000 \text{ndu}^2} \Big(\frac{1 \text{ndu}}{1.67\text{cm}}\Big)^2 = 0.02868514468 \text{ant/cm}^2
+    \] 
+    Our arena is 10 cm by 30 cm.
+    \[
+    0.02868514468 \text{ ant/cm}^2 \times 300 \text{ cm}^2 = 8.605 \text{ ant}
+    \]
+    Ryan's nest$\leftrightarrow$food path is 60 nondimensional units $\approx$ 100 cm $\rightarrow$ 4 ants/cm. Our path is 20 (?) cm (if nest/food 5 cm in) $\rightarrow$ we should have 80 ants
+\end{itemize}
+
+\nocite{*} % Insert publications even if they are not cited in the poster
+\bibliographystyle{plain}
+\bibliography{mbi_reu_bib}
+
+\end{document}
